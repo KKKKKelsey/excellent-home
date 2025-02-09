@@ -9,8 +9,8 @@ const Header = () => {
     const newLang = i18n.language === 'en' ? 'zh' : 'en'
     i18n.changeLanguage(newLang)
       .then(() => {
-        // 强制组件更新
-        window.location.reload() // 临时解决方案
+        // 强制所有组件更新
+        i18n.emit('languageChanged')
       })
       .catch(err => console.error('Language change failed:', err))
   }
@@ -26,28 +26,42 @@ const Header = () => {
     })
   }
 
+  // 统一按钮悬停效果
+  const buttonHoverStyle = {
+    '&:hover': {
+      transform: 'scale(1.15)',
+      transition: 'all 0.3s ease'
+    }
+  }
+
   return (
     <AppBar 
       position="fixed" 
       sx={{ 
         backgroundColor: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        '& .MuiToolbar-root': {
+          minHeight: () => ({
+            xs: `calc(40px * 2.5)`,
+            md: `calc(48px * 2.5)`
+          })
+        }
       }}
     >
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 2, md: 4 } }}>
+        <Toolbar disableGutters sx={{ 
+          justifyContent: 'space-between',
+          alignItems: 'center' // 新增垂直居中
+        }}>
           {/* Logo with enhanced size and hover effect */}
           <Box
             component={Link}
             to="/"
             onClick={scrollToTop}
             sx={{
-              display: 'block',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'scale(1.08)',
-                filter: 'contrast(1.3) brightness(1.15)',
-              }
+              height: '100%', // 占满Toolbar高度
+              display: 'flex',
+              alignItems: 'center'
             }}
           >
             <Box
@@ -55,11 +69,11 @@ const Header = () => {
               src={logoSrc}
               alt="Excellent Home"
               sx={{
-                height: { xs: '50px', md: '65px' },
+                height: { xs: '90px', md: '120px' }, // 原始尺寸
                 width: 'auto',
                 display: 'block',
-                filter: 'contrast(1.15)',
-                transition: 'all 0.3s ease',
+                imageRendering: '-webkit-optimize-contrast',
+                transform: 'translateZ(0)'
               }}
             />
           </Box>
@@ -72,14 +86,18 @@ const Header = () => {
           }}>
             {/* Call Now 按钮 */}
             <Button
-              variant="contained"
+              variant="outlined"
               href="tel:+1234567890"
               sx={{
-                backgroundColor: '#FFDA1A',
-                color: '#000000',
-                fontWeight: 600,
+                color: '#0051BA',
+                border: '2px solid #0051BA',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                transition: 'all 0.3s ease',
+                ...buttonHoverStyle,
                 '&:hover': {
-                  backgroundColor: '#FFE44D',
+                  backgroundColor: '#0051BA',
+                  color: 'white'
                 }
               }}
             >
@@ -89,16 +107,13 @@ const Header = () => {
             {/* Free Estimate 按钮 */}
             <Button
               variant="contained"
-              onClick={() => {
-                const element = document.getElementById('consultation')
-                if (element) element.scrollIntoView({ behavior: 'smooth' })
-              }}
               sx={{
+                ...buttonHoverStyle,
+                color: '#0051BA',
                 backgroundColor: '#FFDA1A',
-                color: '#000000',
-                fontWeight: 600,
                 '&:hover': {
                   backgroundColor: '#FFE44D',
+                  transform: 'scale(1.15)' // 保持缩放
                 }
               }}
             >
@@ -109,9 +124,13 @@ const Header = () => {
             <Button
               onClick={toggleLanguage}
               sx={{
+                ...buttonHoverStyle,
                 minWidth: 'auto',
                 fontWeight: 600,
-                color: '#0051BA'
+                color: '#0051BA',
+                '&:hover': {
+                  transform: 'scale(1.15)'
+                }
               }}
             >
               {i18n.language === 'en' ? '中' : 'EN'}
