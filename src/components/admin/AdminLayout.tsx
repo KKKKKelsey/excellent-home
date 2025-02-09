@@ -1,33 +1,26 @@
-import { Box, AppBar, Toolbar, Typography, Button } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { Box, AppBar, Toolbar, Typography, Button, CssBaseline, Divider } from '@mui/material'
 import { Outlet } from 'react-router-dom'
+import Sidebar from './Sidebar'
 
-const AdminLayout = () => {
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    navigate('/admin/login')
-  }
-
+export default function AdminLayout() {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      <CssBaseline />
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Admin Panel
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            优秀家居后台管理系统
           </Typography>
-          <Button color="inherit" onClick={handleLogout}>
-            Logout
-          </Button>
+          <Button color="inherit">退出登录</Button>
         </Toolbar>
       </AppBar>
       
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: '#f5f5f5' }}>
+      <Sidebar />
+      
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar /> {/* 为AppBar留出空间 */}
         <Outlet />
       </Box>
     </Box>
   )
 }
-
-export default AdminLayout

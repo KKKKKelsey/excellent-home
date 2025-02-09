@@ -3,31 +3,34 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import GroupsIcon from '@mui/icons-material/Groups';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
-
-const features = [
-  {
-    icon: <VerifiedIcon sx={{ fontSize: 40 }} />,
-    title: 'Licensed & Insured',
-    description: 'Fully licensed and insured for your peace of mind'
-  },
-  {
-    icon: <SupportAgentIcon sx={{ fontSize: 40 }} />,
-    title: 'Stress-free & Streamlined Serves',
-    description: '1000 sqf showroom located in Scarborough, Toronto'
-  },
-  {
-    icon: <GroupsIcon sx={{ fontSize: 40 }} />,
-    title: 'Professional Team',
-    description: 'Experienced and dedicated renovation experts'
-  },
-  {
-    icon: <AutoAwesomeIcon sx={{ fontSize: 40 }} />,
-    title: 'Outstanding Quality & Warranty',
-    description: 'Quality guaranteed with comprehensive warranty'
-  }
-];
+import { useTranslation } from 'react-i18next'
 
 const WhyChooseUs = () => {
+  const { t } = useTranslation()
+  
+  const features = [
+    {
+      icon: <VerifiedIcon sx={{ fontSize: 40 }} />,
+      title: t('whyChooseUs.features.licensed.title'),
+      description: t('whyChooseUs.features.licensed.desc')
+    },
+    {
+      icon: <SupportAgentIcon sx={{ fontSize: 40 }} />,
+      title: t('whyChooseUs.features.service.title'),
+      description: t('whyChooseUs.features.service.desc')
+    },
+    {
+      icon: <GroupsIcon sx={{ fontSize: 40 }} />,
+      title: t('whyChooseUs.features.team.title'),
+      description: t('whyChooseUs.features.team.desc')
+    },
+    {
+      icon: <AutoAwesomeIcon sx={{ fontSize: 40 }} />,
+      title: t('whyChooseUs.features.quality.title'),
+      description: t('whyChooseUs.features.quality.desc')
+    }
+  ]
+
   return (
     <Box sx={{ py: 8, bgcolor: 'white' }}>
       <Container maxWidth="lg">
@@ -40,7 +43,7 @@ const WhyChooseUs = () => {
             fontWeight: 500
           }}
         >
-          Why Choose Us
+          {t('whyChooseUs.subtitle')}
         </Typography>
         
         <Typography 
@@ -50,10 +53,12 @@ const WhyChooseUs = () => {
             color: '#2B3144',
             mb: 2,
             fontSize: { xs: '2rem', md: '2.5rem' },
-            fontWeight: 600
+            fontWeight: 600,
+            fontFamily: "'Inter', sans-serif",
+            lineHeight: 1.2
           }}
         >
-          Why Choose Excellent Home
+          {t('whyChooseUs.title')}
         </Typography>
         
         <Typography 
@@ -66,7 +71,7 @@ const WhyChooseUs = () => {
             fontWeight: 500
           }}
         >
-          for Your Renovation Needs?
+          {t('whyChooseUs.subQuestion')}
         </Typography>
 
         <Typography 
@@ -78,9 +83,7 @@ const WhyChooseUs = () => {
             mx: 'auto'
           }}
         >
-          At Excellent Home, we pride ourselves on transforming your vision into reality with unmatched 
-          craftsmanship and attention to detail. Our team of experts is dedicated to delivering quality 
-          renovations that stand the test of time, ensuring your satisfaction at every step.
+          {t(`At Excellent Home, we pride ourselves on transforming your vision into reality with unmatched craftsmanship and attention to detail. Our team of experts is dedicated to delivering quality renovations that stand the test of time, ensuring your satisfaction at every step.`)}
         </Typography>
 
         <Grid container spacing={4} justifyContent="center">
@@ -91,8 +94,8 @@ const WhyChooseUs = () => {
                   p: 3,
                   height: '100%',
                   borderRadius: '16px',
-                  bgcolor: index === 1 ? '#C77D48' : '#2B3144',
-                  color: 'white',
+                  bgcolor: index === 1 ? '#FFDA1A' : '#0051BA',
+                  color: index === 1 ? '#2B3144' : 'white',
                   textAlign: 'center',
                   transition: 'transform 0.3s ease',
                   '&:hover': {
@@ -103,7 +106,11 @@ const WhyChooseUs = () => {
                 <Box sx={{ mb: 2 }}>
                   {feature.icon}
                 </Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ 
+                  mb: 1,
+                  fontSize: '1.1rem',
+                  fontWeight: 600 
+                }}>
                   {feature.title}
                 </Typography>
                 <Typography variant="body2">

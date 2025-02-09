@@ -1,23 +1,22 @@
 import './i18n'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import AppRoutes from './routes'
-import ProjectShowcase from './components/Home/ProjectShowcase'
 import "./App.css"
+import HomePage from './pages/HomePage'
+import AdminPage from './pages/admin/media-management'
+import MainLayout from './components/Layout/MainLayout'
+import ProtectedRoute from './components/admin/ProtectedRoute'
+import LoginPage from './pages/admin/login'
+import { adminRouter } from './router/adminRoutes'
+import AdminLayout from './components/admin/AdminLayout'
 
 function App() {
   console.log('App rendering')
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={
-          <>
-            <ProjectShowcase />
-          </>
-        } />
-        <Route path="/routes" element={<AppRoutes />} />
-      </Routes>
-    </Router>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   )
 }
 

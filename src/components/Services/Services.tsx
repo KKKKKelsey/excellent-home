@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Container, Typography, Grid, Card, CardMedia, CardContent } from '@mui/material'
 
 const servicesData = [
@@ -45,70 +46,26 @@ const servicesData = [
 
 const Services = () => {
   return (
-    <Box sx={{ 
-      pt: 20,
-      pb: 12,
-      bgcolor: '#f5f5f5',
-      minHeight: '100vh',
-      mt: '80px'
-    }}>
+    <Box sx={{ py: 8, bgcolor: '#f8f9fa' }}>
       <Container maxWidth="lg">
-        <Typography 
-          variant="h2" 
-          sx={{ 
-            mb: 6,
-            textAlign: 'center',
-            fontWeight: 600,
-            color: '#333',
-            fontSize: { xs: '2rem', md: '2.5rem' }
-          }}
-        >
+        <Typography variant="h2" align="center" gutterBottom sx={{ mb: 6 }}>
           Our Services
         </Typography>
-
         <Grid container spacing={4}>
           {servicesData.map((service, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  borderRadius: 2,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-8px)'
-                  }
-                }}
-              >
+            <Grid item xs={12} md={4} key={index}>
+              <Card sx={{ height: '100%', boxShadow: 3 }}>
                 <CardMedia
                   component="img"
                   height="200"
                   image={service.image}
                   alt={service.title}
-                  sx={{ objectFit: 'cover' }}
                 />
-                <CardContent sx={{ flexGrow: 1, bgcolor: 'white' }}>
-                  <Typography 
-                    gutterBottom 
-                    variant="h5" 
-                    component="h3"
-                    sx={{ 
-                      fontWeight: 600,
-                      color: '#333',
-                      mb: 2
-                    }}
-                  >
+                <CardContent sx={{ p: 3 }}>
+                  <Typography gutterBottom variant="h5" component="div">
                     {service.title}
                   </Typography>
-                  <Typography 
-                    variant="body1"
-                    sx={{ 
-                      color: '#666',
-                      lineHeight: 1.6
-                    }}
-                  >
+                  <Typography variant="body2" color="text.secondary">
                     {service.description}
                   </Typography>
                 </CardContent>

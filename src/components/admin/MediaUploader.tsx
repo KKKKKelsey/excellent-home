@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Box, Button, Typography, CircularProgress } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import uploadToCloudinary from '../../utils/upload'
 
 interface MediaUploaderProps {
   type: 'image' | 'video'
-  onUploadComplete?: (filePath: string) => void
+  onUploadComplete?: (fileUrl: string) => void
 }
 
 const MediaUploader = ({ type, onUploadComplete }: MediaUploaderProps) => {
@@ -18,24 +19,10 @@ const MediaUploader = ({ type, onUploadComplete }: MediaUploaderProps) => {
     setIsUploading(true)
 
     try {
-      // 创建 FormData
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', type)
-
-      // 发送上传请求
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-
-      const data = await response.json()
+      // Upload the file to Cloudinary
+      const secureUrl = await uploadToCloudinary(file)
       if (onUploadComplete) {
-        onUploadComplete(data.filePath)
+        onUploadComplete(secureUrl)
       }
     } catch (error) {
       console.error('Upload error:', error)

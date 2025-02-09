@@ -16,7 +16,7 @@ const Login = () => {
     try {
       const success = await login({ username, password })
       if (success) {
-        navigate('/admin')
+        navigate('/admin/media')
       } else {
         setError('Invalid username or password')
       }
@@ -75,7 +75,7 @@ const Login = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              Login
             </Button>
           </Box>
         </Paper>

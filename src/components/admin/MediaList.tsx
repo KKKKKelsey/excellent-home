@@ -3,41 +3,62 @@ import { Box, List, ListItem, IconButton, Typography, Modal } from '@mui/materia
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
-import CloseIcon from '@mui/icons-material/Close'
 import MediaUploader from './MediaUploader'
-import PreviewIcon from '@mui/icons-material/Visibility'
+import '../../types/media'
+import { PlayCircleOutline } from '@mui/icons-material'
 
-interface MediaListProps {
+interface MediaItem {
+  id: string
+  url: string
+  title: string
+  order: number
   type: 'image' | 'video'
 }
 
-const MediaList = ({ type }: MediaListProps) => {
-  const [selectedMedia, setSelectedMedia] = useState<string | null>(null)
+interface MediaListProps {
+  type: 'image' | 'video'
+  onUpdate: (items: MediaItem[]) => void
+}
+
+const MediaList = ({ type, onUpdate }: MediaListProps) => {
   const [videoThumbnails, setVideoThumbnails] = useState<{ [key: string]: string }>({})
-  const [mediaItems, setMediaItems] = useState<string[]>([])
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
   // 初始化媒体列表
   useEffect(() => {
-    if (type === 'image') {
-      setMediaItems([
-        '/images/gallery/Kitchen1.jpeg',
-        '/images/gallery/Kitchen2.jpeg',
-        '/images/gallery/Kitchen3.jpeg',
-        '/images/gallery/Kitchen4.jpeg',
-        '/images/gallery/Kitchen5.jpeg',
-        '/images/gallery/Kitchen6.jpeg'
-      ])
-    } else {
-      setMediaItems([
-        '/videos/video0.mp4',
-        '/videos/video1.mp4',
-        '/videos/video2.mp4',
-        '/videos/video3.mp4',
-        '/videos/video4.mp4'
-      ])
+    const loadInitialMedia = async () => {
+      try {
+        // 动态加载初始文件
+        const mediaType = type === 'image' ? 'gallery' : 'videos'
+        const response = await fetch(`/media-list/${mediaType}.json`)
+        const data = await response.json()
+        
+        setMediaItems(data.files.map((file: string) => ({
+          id: file,
+          url: `/${mediaType}/${file}`,
+          title: file.replace(/\.[^/.]+$/, ""), // 去除扩展名
+          order: data.files.indexOf(file) + 1,
+          type
+        })))
+      } catch (error) {
+        // 本地开发回退方案
+        const localFiles = type === 'image' 
+          ? ['Kitchen1.jpeg', 'Kitchen2.jpeg', 'Kitchen3.jpeg'] 
+          : ['video0.mp4', 'video1.mp4', 'video2.mp4']
+        
+        setMediaItems(localFiles.map(file => ({
+          id: file,
+          url: `/${type === 'image' ? 'images/gallery' : 'videos'}/${file}`,
+          title: file.replace(/\.[^/.]+$/, ""),
+          order: localFiles.indexOf(file) + 1,
+          type
+        })))
+      }
     }
+
+    loadInitialMedia()
   }, [type])
 
   // 优化视频缩略图生成
@@ -45,21 +66,21 @@ const MediaList = ({ type }: MediaListProps) => {
     if (type === 'video') {
       mediaItems.forEach(videoUrl => {
         // 如果已经有缩略图，跳过
-        if (videoThumbnails[videoUrl]) return
+        if (videoThumbnails[videoUrl.id]) return
 
         const video = document.createElement('video')
         video.preload = 'metadata' // 只加载元数据
-        video.src = videoUrl
+        video.src = videoUrl.url
         
         // 添加错误处理
         video.onerror = () => {
-          console.error(`Error loading video: ${videoUrl}`)
+          console.error(`Error loading video: ${videoUrl.url}`)
         }
 
         // 设置超时
         const timeoutId = setTimeout(() => {
           video.src = ''
-          console.warn(`Timeout loading video: ${videoUrl}`)
+          console.warn(`Timeout loading video: ${videoUrl.url}`)
         }, 5000)
 
         video.onloadedmetadata = () => {
@@ -75,7 +96,7 @@ const MediaList = ({ type }: MediaListProps) => {
             const ctx = canvas.getContext('2d')
             ctx?.drawImage(video, 0, 0)
             const thumbnail = canvas.toDataURL('image/jpeg', 0.5) // 降低质量以提高性能
-            setVideoThumbnails(prev => ({ ...prev, [videoUrl]: thumbnail }))
+            setVideoThumbnails(prev => ({ ...prev, [videoUrl.id]: thumbnail }))
             video.src = '' // 清除视频源
           } catch (error) {
             console.error('Error generating thumbnail:', error)
@@ -105,6 +126,13 @@ const MediaList = ({ type }: MediaListProps) => {
       })
       
       setMediaItems(newItems)
+      onUpdate(newItems.map(item => ({
+        id: item.id,
+        url: item.url,
+        title: item.title,
+        order: item.order,
+        type: item.type
+      })))
     } catch (error) {
       console.error('Failed to save order:', error)
       // 可以添加错误提示
@@ -115,11 +143,25 @@ const MediaList = ({ type }: MediaListProps) => {
   const handleDelete = (index: number) => {
     const newItems = mediaItems.filter((_, i) => i !== index)
     setMediaItems(newItems)
+    onUpdate(newItems.map(item => ({
+      id: item.id,
+      url: item.url,
+      title: item.title,
+      order: item.order,
+      type: item.type
+    })))
   }
 
   // 添加新的媒体文件
   const handleUploadComplete = (filePath: string) => {
-    setMediaItems(prev => [...prev, filePath])
+    const newItem: MediaItem = {
+      id: filePath,
+      url: `/${type === 'image' ? 'images/gallery' : 'videos'}/${filePath}`,
+      title: filePath.replace(/\.[^/.]+$/, ""),
+      order: mediaItems.length + 1,
+      type
+    }
+    setMediaItems(prev => [...prev, newItem])
   }
 
   // 生成视频缩略图
@@ -140,151 +182,63 @@ const MediaList = ({ type }: MediaListProps) => {
   }
 
   // 处理预览
-  const handlePreview = async (item: string) => {
-    if (type === 'video') {
-      const thumbnail = await generateVideoThumbnail(item)
-      setPreviewUrl(thumbnail as string)
-    } else {
-      setPreviewUrl(item)
-    }
+  const handlePreview = (url: string) => {
+    setPreviewUrl(url)
     setIsPreviewOpen(true)
   }
 
-  return (
-    <Box>
-      {/* 添加上传组件 */}
-      <Box sx={{ mb: 3 }}>
-        <MediaUploader type={type} onUploadComplete={handleUploadComplete} />
-      </Box>
+  // 添加自动保存功能
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onUpdate(mediaItems)
+    }, 1000)
+    return () => clearTimeout(timeout)
+  }, [mediaItems])
 
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Current {type === 'image' ? 'Gallery Images' : 'Project Videos'}
-      </Typography>
-      
-      <List>
-        {mediaItems.map((item, index) => (
-          <ListItem
-            key={index}
-            sx={{
-              border: '1px solid #eee',
-              mb: 1,
-              borderRadius: 1,
-              padding: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: 'white'
+  // 优化缩略图显示
+  return (
+    <List dense sx={{ width: '100%' }}>
+      {mediaItems.map((item, index) => (
+        <ListItem key={item.id} sx={{ p: 1 }}>
+          <img 
+            src={item.url} 
+            alt={item.title}
+            style={{ 
+              width: 100, 
+              height: 60, 
+              objectFit: 'cover',
+              marginRight: 16 
             }}
-          >
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                flex: 1,
-                cursor: 'pointer'
-              }}
-              onClick={() => setSelectedMedia(item)}
-            >
-              {type === 'image' ? (
-                <Box
-                  component="img"
-                  src={item}
-                  sx={{
-                    width: 150,
-                    height: 90,
-                    objectFit: 'cover',
-                    mr: 2,
-                    borderRadius: 1,
-                  }}
-                />
-              ) : (
-                <Box
-                  component="img"
-                  src={videoThumbnails[item] || ''}
-                  sx={{
-                    width: 150,
-                    height: 90,
-                    objectFit: 'cover',
-                    mr: 2,
-                    borderRadius: 1,
-                    bgcolor: 'black'
-                  }}
-                />
-              )}
-              <Typography>
-                {type === 'image' 
-                  ? `Gallery Image ${index + 1}` 
-                  : `Project Video ${index + 1}`}
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', gap: 1 }}>
+          />
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="body2">{item.title}</Typography>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
               <IconButton 
+                size="small" 
                 onClick={() => handleMove(index, 'up')}
                 disabled={index === 0}
-                size="small"
               >
-                <ArrowUpwardIcon />
+                <ArrowUpwardIcon fontSize="small" />
               </IconButton>
-              <IconButton 
+              <IconButton
+                size="small"
                 onClick={() => handleMove(index, 'down')}
                 disabled={index === mediaItems.length - 1}
-                size="small"
               >
-                <ArrowDownwardIcon />
+                <ArrowDownwardIcon fontSize="small" />
               </IconButton>
               <IconButton 
+                size="small" 
+                color="error" 
                 onClick={() => handleDelete(index)}
-                color="error"
-                size="small"
               >
-                <DeleteIcon />
-              </IconButton>
-              <IconButton onClick={() => handlePreview(item)}>
-                <PreviewIcon />
+                <DeleteIcon fontSize="small" />
               </IconButton>
             </Box>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* 预览模态框 */}
-      <Modal
-        open={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: '90%',
-            maxHeight: '90%',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            outline: 'none',
-            borderRadius: 2
-          }}
-        >
-          {type === 'image' ? (
-            <img 
-              src={previewUrl} 
-              alt="Preview" 
-              style={{ maxWidth: '100%', maxHeight: '80vh' }}
-            />
-          ) : (
-            <video 
-              src={previewUrl}
-              controls
-              style={{ maxWidth: '100%', maxHeight: '80vh' }}
-            />
-          )}
-        </Box>
-      </Modal>
-    </Box>
+          </Box>
+        </ListItem>
+      ))}
+    </List>
   )
 }
 

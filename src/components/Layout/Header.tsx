@@ -8,6 +8,11 @@ const Header = () => {
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'zh' : 'en'
     i18n.changeLanguage(newLang)
+      .then(() => {
+        // 强制组件更新
+        window.location.reload() // 临时解决方案
+      })
+      .catch(err => console.error('Language change failed:', err))
   }
 
   const logoSrc = i18n.language === 'zh' 

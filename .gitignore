@@ -6,3 +6,6 @@ build/
 *.mov
 public/videos/
 public/images/
+excellent-home/
+**/node_modules/
+*.log
